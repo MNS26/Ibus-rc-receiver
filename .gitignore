@@ -1,7 +1,7 @@
 *.xml
 
 External/*
-!External/
+!External/*.txt
 RCSerial-Common/bin/
 RCSerial-Common/obj
 RCSerial-Console/bin/
