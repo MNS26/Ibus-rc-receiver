@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{3E3224AE-5C7F-4538-80B7-97D98F3BC31C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <RootNamespace>RCSerialCommmon</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\External\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\External\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="Balsa.Core">
+      <HintPath>..\External\Managed\Balsa.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FloatingUtil">
+      <HintPath>..\External\Managed\FloatingUtil.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <HintPath>..\External\Managed\System.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\External\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\External\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="AutopilotCommon">
+      <HintPath>..\External\Autopilot\AutopilotCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="Autopilot">
+      <HintPath>..\External\Autopilot\Autopilot.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Message.cs" />
+    <Compile Include="RingBuffer.cs" />
+    <Compile Include="Decoder.cs" />
+    <Compile Include="RCSerial.cs" />
+    <Compile Include="SerialIO.cs" />
+    <Compile Include="IOInterface.cs" />
+    <Compile Include="FileIO.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

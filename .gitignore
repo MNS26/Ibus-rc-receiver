@@ -1,0 +1,7 @@
+*.xml
+External/*
+RCSerial-Common/bin/
+RCSerial-Common/obj
+RCSerial-Console/bin/
+RCSerial-Console/obj/
+
