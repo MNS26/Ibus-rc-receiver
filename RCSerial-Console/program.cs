@@ -44,7 +44,7 @@ namespace Ibus
             Decoder decoder = new Decoder(MessageEvent, SensorEvent, io);
 
             bool running = true;
-            byte[] buffer = new byte[64];
+            byte[] buffer = new byte[32];
             while (running)
             {
                 int bytesAvailable = io.Available();
@@ -92,6 +92,7 @@ namespace Ibus
 
         private static void MessageEvent(Message m)
         {
+
             //Console.WriteLine($"message {m.channels[0]}");
             //data.RCchannels = m.channelsRaw;
 

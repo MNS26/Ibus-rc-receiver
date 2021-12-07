@@ -53,6 +53,11 @@ namespace Ibus
                     incomingBuffer.Read(processMessage, processMessagePos, 1);
                     processMessagePos += 1;
                     processMessageSize = processMessage[0];
+                    if (processMessageSize < 4)
+                    {
+                        syncronised = false;
+                        continue;
+                    }
                     //Maximum protocol length is 32 bytes, anything else must be a bit slip.
                     if (processMessageSize > 32)
                     {
@@ -97,11 +102,14 @@ namespace Ibus
                     messageEvent(m);
                 }
 
+
                 //==========================================================================================================
 
                 //Sensor discover? I have no idea. I *think* we are supposed to reply 0x90 sensor description messages.
                 if (messageType == 0x80)
                 {
+                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
+
                     if (sensorID == 0x01)
                     {
                         //Console.WriteLine("sensor1");
@@ -109,11 +117,8 @@ namespace Ibus
                         sendBuffer[1] = 0x81; //(7-4) command (3-0) sensorID
                         sendBuffer[2] = 0x7A; //checksum
                         sendBuffer[3] = 0xFF; //checksum
-                        io.ClearIn();
-                        io.ClearOut();
                         io.Write(sendBuffer, 4);
-                        io.ClearIn();
-                        io.ClearOut();
+
                     }
                     handled = true;
                     //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
@@ -122,7 +127,9 @@ namespace Ibus
                 //Sensor description message. We send these I think, don't receive.
                 if (messageType == 0x90)
                 {
-                    if(sensorID == 0x01)
+                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
+
+                    if (sensorID == 0x01)
                     {
                         sendBuffer[0] = 0x06; //packet length
                         sendBuffer[1] = 0x91; //(7-4) command (3-0) address
@@ -130,11 +137,7 @@ namespace Ibus
                         sendBuffer[3] = 0x02; //always 0x02
                         sendBuffer[4] = 0x66; //checksum
                         sendBuffer[5] = 0xFF; //checksum
-                        io.ClearIn();
-                        io.ClearOut();
                         io.Write(sendBuffer, 6);
-                        io.ClearIn();
-                        io.ClearOut();
                     }
                     handled = true;
                     //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
@@ -143,6 +146,8 @@ namespace Ibus
                 //Sensor data request
                 if (messageType == 0xA0)
                 {
+                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
+
                     if (sensorID == 0x01)
                     {
                         Console.WriteLine("Sensor 1 data");
@@ -153,11 +158,7 @@ namespace Ibus
                         sendBuffer[3] = 0x00; //measurement
                         sendBuffer[4] = 0x5E; //checksum
                         sendBuffer[5] = 0xFF; //checksum
-                        io.ClearIn();
-                        io.ClearOut();
                         io.Write(sendBuffer, 6);
-                        io.ClearIn();
-                        io.ClearOut();
                         //This needs reworking to send both 2 byte and 4 byte sensor data
                         //sendBuffer[0] = 0x6;
                         //sendBuffer[1] = processMessage[1];
@@ -168,7 +169,6 @@ namespace Ibus
                         //io.Write(sendBuffer, 6);
                     }
                     handled = true;
-
                 }
 
                 //I really don't know what these are
@@ -212,4 +212,4 @@ namespace Ibus
             BitConverter.GetBytes(compute).CopyTo(sendBuffer, positionOfChecksum);
         }
     }
-}
+} 

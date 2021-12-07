@@ -6,7 +6,7 @@ namespace Ibus
 {
     public class RingBuffer
     {
-        public byte[] buffer = new byte[512];
+        public byte[] buffer = new byte[256];
         int readPos;
         int writePos;
 
@@ -38,14 +38,7 @@ namespace Ibus
                 firstWrite = length;
             }
             int secondWrite = length - firstWrite;
-            try
-            {
-                Array.Copy(bytes, offset, buffer, writePos, firstWrite);
-            }
-            catch
-            {
-                Console.WriteLine($"bytes,offset:{offset}, buffer,writePos:{writePos},firstWrite:{firstWrite}");
-            }
+            Array.Copy(bytes, offset, buffer, writePos, firstWrite);
             writePos += firstWrite;
             if (writePos == buffer.Length)
             {
@@ -68,21 +61,9 @@ namespace Ibus
             if (firstRead > length)
             {
                 firstRead = length;
-            }else
-            if (0>firstRead)
-            {
-                firstRead = 1; 
             }
             int secondRead = length - firstRead;
-            //Array.Copy(buffer, readPos, dest, offset, firstRead);
-            try
-            {
-                Array.Copy(buffer, readPos, dest, offset, firstRead);
-            }
-            catch
-            {
-                Console.WriteLine($"buffer,readPos:{readPos}, dest,offset:{offset},firtsRead:{firstRead}");
-            }
+            Array.Copy(buffer, readPos, dest, offset, firstRead);
             readPos += firstRead;
             if (readPos == buffer.Length)
             {
@@ -91,6 +72,7 @@ namespace Ibus
             if (secondRead > 0)
             {
                 Array.Copy(buffer, readPos, dest, firstRead + offset, secondRead);
+                readPos += secondRead;
             }
         }
 
