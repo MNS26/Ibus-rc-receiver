@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 
 namespace Ibus
 {
@@ -12,13 +11,13 @@ namespace Ibus
         private int processMessagePos = 0;
         private int processMessageSize = 0;
         private Action<Message> messageEvent;
-        private Func<int, ushort> sensorEvent;
+        private Sensor[] sensors;
         private IOInterface io;
-
-        public Decoder(Action<Message> messageEvent, Func<int, ushort> sensorEvent, IOInterface io)
+        private long[] ignoreSensorUntil = new long[15];
+        public Decoder(Action<Message> messageEvent, Sensor[] sensors, IOInterface io)
         {
             this.messageEvent = messageEvent;
-            this.sensorEvent = sensorEvent;
+            this.sensors = sensors;
             this.io = io;
         }
 
@@ -97,85 +96,76 @@ namespace Ibus
                     for (int i = 0; i < 14; i++)
                     {
                         m.channelsRaw[i] = BitConverter.ToUInt16(processMessage, 2 + (i * 2));
-                        m.channels[i] = -1f + (m.channelsRaw[i] - 1000) / 500f;
+                        m.channels[i] = -1f + (m.channelsRaw[i] - 500) / 500f;
                     }
                     messageEvent(m);
                 }
 
-
-                //==========================================================================================================
-
-                //Sensor discover? I have no idea. I *think* we are supposed to reply 0x90 sensor description messages.
-                if (messageType == 0x80)
+                //Sensor discover
+                if (messageType == 0x80)//128
                 {
-                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
-
-                    if (sensorID == 0x01)
-                    {
-                        //Console.WriteLine("sensor1");
-                        sendBuffer[0] = 0x04; //packet length
-                        sendBuffer[1] = 0x81; //(7-4) command (3-0) sensorID
-                        sendBuffer[2] = 0x7A; //checksum
-                        sendBuffer[3] = 0xFF; //checksum
-                        io.Write(sendBuffer, 4);
-
-                    }
                     handled = true;
-                    //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
-                    // 04 81 7A FF 
+                    long currentTime = DateTime.UtcNow.Ticks;
+                    Console.WriteLine($"DISCOVER {sensorID}");
+                    //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
+                    if (currentTime > ignoreSensorUntil[sensorID])
+                    {
+                        Console.WriteLine($"DISCOVER {sensorID} SEND");
+                        //Because these get echoed back onto the serial line we will see our own message and go into an infinite loop. Frames are 7ms to 5ms seems safe.
+                        ignoreSensorUntil[sensorID] = currentTime + 5 * TimeSpan.TicksPerMillisecond;
+                        //Echo message if we have the sensor
+                        if (sensors[sensorID] != null)
+                        {
+                            io.Write(processMessage, 4);
+                            io.Clear();
+
+                        }
+                    }
                 }
-                //Sensor description message. We send these I think, don't receive.
-                if (messageType == 0x90)
-                {
-                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
 
-                    if (sensorID == 0x01)
-                    {
-                        sendBuffer[0] = 0x06; //packet length
-                        sendBuffer[1] = 0x91; //(7-4) command (3-0) address
-                        sendBuffer[2] = 0x00; //sensor type
-                        sendBuffer[3] = 0x02; //always 0x02
-                        sendBuffer[4] = 0x66; //checksum
-                        sendBuffer[5] = 0xFF; //checksum
-                        io.Write(sendBuffer, 6);
-                    }
+                //Sensor description message
+                if (messageType == 0x90)//144
+                {
                     handled = true;
-                    //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
+                    //If it's length 4 we know the other side has requested sensor info. Anything bigger is our response
+                    if (processMessageSize == 4 && sensors[sensorID] != null)
+                    {
+                        Console.WriteLine($"DESCRIBE {sensorID}");
+                        //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
+                        Sensor s = sensors[sensorID];
+                        sendBuffer[0] = 0x06;
+                        sendBuffer[1] = (byte)(0x90 | sensorID);
+                        sendBuffer[2] = (byte)s.type;
+                        sendBuffer[3] = (byte)s.length;
+                        SetSendChecksum(4);
+                        io.Write(sendBuffer, 6);
+                        io.Clear();
+                    }
                 }
 
                 //Sensor data request
-                if (messageType == 0xA0)
+                if (messageType == 0xA0)//160
                 {
-                    Console.WriteLine(BitConverter.ToString(sendBuffer, 0, 4).Replace("-", " "));
-
-                    if (sensorID == 0x01)
-                    {
-                        Console.WriteLine("Sensor 1 data");
-
-                        sendBuffer[0] = 0x06; //packet length
-                        sendBuffer[1] = 0xA1; //(7-4) command (3-0) sendorID
-                        sendBuffer[2] = 0x00; //measurement
-                        sendBuffer[3] = 0x00; //measurement
-                        sendBuffer[4] = 0x5E; //checksum
-                        sendBuffer[5] = 0xFF; //checksum
-                        io.Write(sendBuffer, 6);
-                        //This needs reworking to send both 2 byte and 4 byte sensor data
-                        //sendBuffer[0] = 0x6;
-                        //sendBuffer[1] = processMessage[1];
-                        //This event needs to be changed to some other class where you can configure sensors
-                        //ushort sensorData = sensorEvent(sensorID);
-                        //BitConverter.GetBytes(sensorData).CopyTo(sendBuffer, 2);
-                        //SetSendChecksum(4);
-                        //io.Write(sendBuffer, 6);
-                    }
                     handled = true;
+                    //If it's length 4 we know the other side has requested sensor data. Anything bigger is our response
+                    if (processMessageSize == 4 && sensors[sensorID] != null)
+                    {
+                        Console.WriteLine($"SEND {sensorID}");
+                        //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
+                        Sensor s = sensors[sensorID];
+                        s.WriteValue(sensorID, sendBuffer);
+                        SetSendChecksum(2 + s.length);
+                        io.Write(sendBuffer, 4 + s.length);
+                        io.Clear();
+
+                    }
                 }
 
                 //I really don't know what these are
                 if (messageType == 0xF0)
                 {
                     handled = true;
-                    Console.WriteLine($"TODO: {messageType.ToString("X2")}");
+                    //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
                 }
 
 
@@ -192,7 +182,6 @@ namespace Ibus
 
         private bool Checksum(int positionOfChecksum)
         {
-            if (0 > positionOfChecksum) { positionOfChecksum = 0; }
             ushort compute = 0xFFFF;
             for (int i = 0; i < positionOfChecksum; i++)
             {
@@ -212,4 +201,4 @@ namespace Ibus
             BitConverter.GetBytes(compute).CopyTo(sendBuffer, positionOfChecksum);
         }
     }
-} 
+}

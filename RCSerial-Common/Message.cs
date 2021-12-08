@@ -1,4 +1,4 @@
-﻿namespace Ibus
+namespace Ibus
 {
     public class Message
     {

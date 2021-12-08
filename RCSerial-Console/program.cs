@@ -1,22 +1,17 @@
-﻿#pragma warning disable CA1416
-//Serial warnings for ios and android
-using AutopilotCommon;
-using System;
-using System.IO;
-using System.IO.Ports;
+﻿using System;
 using System.Threading;
 
 namespace Ibus
 {
     class Program
     {
-        static DataStore data = new DataStore();
-        public const int SENSOR_DEVICES = 5;
+        static string serialPortName = "/dev/ttyUSB0";
+        private static long startupTime = DateTime.UtcNow.Ticks;
         private static IOInterface io;
         private static byte[] sendBuffer = new byte[64];
-        static string serialPortName;
         public static void Main(string[] args)
         {
+            /*
             string[] serialPorts = SerialPort.GetPortNames();
             if (serialPorts.Length > 1 && args.Length != 1)
             {
@@ -25,10 +20,9 @@ namespace Ibus
                 {
                     Console.WriteLine(validPort);
                 }
-                //serialPortName = Console.ReadLine();
-                serialPortName = "/dev/ttyUSB0";
-                //return;
+                return;
             }
+//            string serialPortName;
             if (serialPorts.Length > 0)
             {
                 serialPortName = serialPorts[0];
@@ -37,14 +31,21 @@ namespace Ibus
             {
                 serialPortName = args[0];
             }
+            */
+
+            //Set up sensors
+            Sensor[] sensors = new Sensor[15];
+            sensors[1] = new Sensor(SensorType.CELL, GetVoltage);
+            sensors[2] = new Sensor(SensorType.CELL, GetVoltage);
 
             //Swap to switch to serial
             io = new SerialIO(serialPortName);
             //io = new FileIO();
-            Decoder decoder = new Decoder(MessageEvent, SensorEvent, io);
+            //io = new TCPIO(5867);
+            Decoder decoder = new Decoder(MessageEvent, sensors, io);
 
             bool running = true;
-            byte[] buffer = new byte[32];
+            byte[] buffer = new byte[64];
             while (running)
             {
                 int bytesAvailable = io.Available();
@@ -56,9 +57,8 @@ namespace Ibus
                         bytesRead = buffer.Length;
                     }
                     io.Read(buffer, bytesRead);
-                    //Console.WriteLine(BitConverter.ToString(buffer).Replace("-", ""));
-
                     decoder.Decode(buffer, bytesRead);
+                    io.Clear();
                 }
                 else
                 {
@@ -70,32 +70,27 @@ namespace Ibus
                 }
                 if (bytesAvailable < buffer.Length)
                 {
-                    //Thread.Sleep(1000);
+                    Thread.Sleep(1);
                 }
             }
         }
 
-        //TODO: Fill in stuff here
-        private static ushort SensorEvent(int id)
+        private static int GetVoltage()
         {
-            switch (id)
-            {
-                case 0:
-                    return 100;
-                case 1:
-                    return 200;
-                case 3:
-                    return 300;
-            }
-            return 0;
+            long currentTime = DateTime.UtcNow.Ticks;
+            int retVal = (int)((currentTime - startupTime) / TimeSpan.TicksPerSecond) % 100;
+            return retVal;
+        }
+
+        private static int GetAltitude()
+        {
+            long currentTime = DateTime.UtcNow.Ticks;
+            return (int)((currentTime - startupTime) / TimeSpan.TicksPerSecond);
         }
 
         private static void MessageEvent(Message m)
         {
-
             //Console.WriteLine($"message {m.channels[0]}");
-            //data.RCchannels = m.channelsRaw;
-
         }
     }
 }

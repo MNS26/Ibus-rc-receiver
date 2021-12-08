@@ -1,4 +1,3 @@
-﻿using System;
 using System.IO;
 
 namespace Ibus
@@ -35,9 +34,7 @@ namespace Ibus
         {
             writer.Write(buffer, 0, length);
         }
-        public void ClearIn()
-        { }
-        public void ClearOut()
-        { }
+        
+        public void Clear(){}
     }
 }

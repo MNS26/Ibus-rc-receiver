@@ -1,6 +1,3 @@
-﻿//#pragma warning disable CA1416
-//Serial warnings for ios and android
-
 using System.IO.Ports;
 
 namespace Ibus
@@ -12,7 +9,7 @@ namespace Ibus
         public SerialIO(string serialPortName)
         {
             sp = new SerialPort(serialPortName, 115200, Parity.None, 8, StopBits.One);
-            sp.Open();
+	        sp.Open();
         }
 
         public int Available()
@@ -29,12 +26,9 @@ namespace Ibus
         {
             sp.Write(buffer, 0, length);
         }
-        public void ClearIn()
+        public void Clear()
         {
             sp.DiscardInBuffer();
-        }
-        public void ClearOut()
-        {
             sp.DiscardOutBuffer();
         }
     }
