@@ -34,7 +34,5 @@ namespace Ibus
         {
             writer.Write(buffer, 0, length);
         }
-        
-        public void Clear(){}
     }
 }

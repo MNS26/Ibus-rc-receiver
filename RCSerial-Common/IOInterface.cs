@@ -5,6 +5,5 @@ namespace Ibus
         int Available();
         void Read(byte[] buffer, int length);
         void Write(byte[] buffer, int length);
-        void Clear();
     }
 }

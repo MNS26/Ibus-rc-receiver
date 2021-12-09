@@ -51,7 +51,7 @@ namespace Ibus
                 int bytesToRead = length;
                 while (bytesToRead > 0)
                 {
-                    int bytesRead = tcp.GetStream().Read(buffer, 0, length);
+                    int bytesRead = tcp.GetStream().Read(buffer, length - bytesToRead, length);
                     if (bytesRead == 0)
                     {
                         Console.WriteLine("Disconnect");
@@ -79,6 +79,5 @@ namespace Ibus
                 tcp = null;
             }
         }
-        public void Clear(){}
     }
 }

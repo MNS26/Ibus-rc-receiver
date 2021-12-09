@@ -1,78 +1,101 @@
+/*
+Message frame is:
+Length (1 byte) | MessageType(0xF0) & SensorID(0x0F) (1 byte) | Data(variable length) | Checksum(2)
+The length field includes the length byte and the checksum bytes
+Checksum is computed 0xFFFF - each byte before the checksum.
+*/
+
+
 using System;
 
 namespace Ibus
 {
     public class Decoder
     {
-        private RingBuffer incomingBuffer = new RingBuffer();
         private bool syncronised = false;
-        private byte[] sendBuffer = new byte[32];
-        private byte[] processMessage = new byte[32];
+        private byte[] processMessage = new byte[64];
         private int processMessagePos = 0;
-        private int processMessageSize = 0;
-        private Action<Message> messageEvent;
-        private Sensor[] sensors;
-        private IOInterface io;
-        private long[] ignoreSensorUntil = new long[15];
-        public Decoder(Action<Message> messageEvent, Sensor[] sensors, IOInterface io)
+        private Handler handler;
+
+        public Decoder(Handler handler)
         {
-            this.messageEvent = messageEvent;
-            this.sensors = sensors;
-            this.io = io;
+            this.handler = handler;
         }
 
         public void Decode(byte[] bytes, int length)
         {
-            incomingBuffer.Write(bytes, 0, length);
+            int incomingReadLeft = length;
+            int incomingReadPos = 0;
 
-            while (incomingBuffer.Available > 1)
+            while (incomingReadLeft > 0)
             {
                 //Syncronise the stream by finding a 0x2040 header
-                while (!syncronised && incomingBuffer.Available > 2)
+                while (!syncronised && incomingReadLeft > 0)
                 {
-                    if (incomingBuffer.ReadByte() == 0x20 && incomingBuffer.ReadByte() == 0x40)
+                    processMessage[processMessagePos] = bytes[incomingReadPos];
+                    incomingReadPos++;
+                    incomingReadLeft--;
+                    if (processMessagePos == 0 && processMessage[0] == 0x20)
                     {
-                        syncronised = true;
-                        processMessage[0] = 0x20;
-                        processMessage[1] = 0x40;
+                        processMessagePos = 1;
+                        continue;
+                    }
+                    if (processMessagePos == 1 && processMessage[1] == 0x40)
+                    {
                         processMessagePos = 2;
-                        processMessageSize = processMessage[0];
+                        syncronised = true;
+                    }
+                    else
+                    {
+                        processMessagePos = 0;
                     }
                 }
 
-                //We have syncronised, now we need to wait until we have enough buffer to read the 2040 message
+                //We can't continue unless syncronised
                 if (!syncronised)
                 {
                     return;
                 }
 
                 //Read size
-                if (processMessagePos == 0 && incomingBuffer.Available > 0)
+                if (processMessagePos == 0)
                 {
-                    incomingBuffer.Read(processMessage, processMessagePos, 1);
-                    processMessagePos += 1;
-                    processMessageSize = processMessage[0];
-                    if (processMessageSize < 4)
+                    processMessage[processMessagePos] = bytes[incomingReadPos];
+                    incomingReadPos++;
+                    incomingReadLeft--;
+                    processMessagePos = 1;
+                    //All messages must be at least 4 bytes, 1 length, 1 messagetype/sensorID, 2 checksum.
+                    if (processMessage[0] < 4)
                     {
+                        processMessagePos = 0;
                         syncronised = false;
                         continue;
                     }
-                    //Maximum protocol length is 32 bytes, anything else must be a bit slip.
-                    if (processMessageSize > 32)
+                    //Any message bigger than the processMessage buffer is an error.
+                    if (processMessage[0] > processMessage.Length)
                     {
+                        processMessagePos = 0;
                         syncronised = false;
                         continue;
                     }
                 }
 
                 //Read message
-                if (incomingBuffer.Available >= processMessageSize)
+                if (incomingReadLeft > 0)
                 {
-                    int bytesToRead = processMessageSize - processMessagePos;
-                    incomingBuffer.Read(processMessage, processMessagePos, bytesToRead);
+                    int bytesToRead = processMessage[0] - processMessagePos;
+                    if (bytesToRead > incomingReadLeft)
+                    {
+                        bytesToRead = incomingReadLeft;
+                    }
+                    Array.Copy(bytes, incomingReadPos, processMessage, processMessagePos, bytesToRead);
                     processMessagePos += bytesToRead;
+                    incomingReadPos += bytesToRead;
+                    incomingReadLeft -= bytesToRead;
                 }
-                else
+
+                //Message not yet fully received, wait.
+                if (processMessagePos != processMessage[0])
                 {
                     return;
                 }
@@ -80,103 +103,13 @@ namespace Ibus
                 //Check the message checksum
                 if (!Checksum(processMessage[0] - 2))
                 {
+                    processMessagePos = 0;
                     syncronised = false;
                     continue;
                 }
 
-                int messageType = processMessage[1] & 0xF0;
-                int sensorID = processMessage[1] & 0x0F;
-                bool handled = false;
-
-                //Channel message
-                if (messageType == 0x40)
-                {
-                    handled = true;
-                    Message m = new Message();
-                    for (int i = 0; i < 14; i++)
-                    {
-                        m.channelsRaw[i] = BitConverter.ToUInt16(processMessage, 2 + (i * 2));
-                        m.channels[i] = -1f + (m.channelsRaw[i] - 500) / 500f;
-                    }
-                    messageEvent(m);
-                }
-
-                //Sensor discover
-                if (messageType == 0x80)//128
-                {
-                    handled = true;
-                    long currentTime = DateTime.UtcNow.Ticks;
-                    Console.WriteLine($"DISCOVER {sensorID}");
-                    //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
-                    if (currentTime > ignoreSensorUntil[sensorID])
-                    {
-                        Console.WriteLine($"DISCOVER {sensorID} SEND");
-                        //Because these get echoed back onto the serial line we will see our own message and go into an infinite loop. Frames are 7ms to 5ms seems safe.
-                        ignoreSensorUntil[sensorID] = currentTime + 5 * TimeSpan.TicksPerMillisecond;
-                        //Echo message if we have the sensor
-                        if (sensors[sensorID] != null)
-                        {
-                            io.Write(processMessage, 4);
-                            io.Clear();
-
-                        }
-                    }
-                }
-
-                //Sensor description message
-                if (messageType == 0x90)//144
-                {
-                    handled = true;
-                    //If it's length 4 we know the other side has requested sensor info. Anything bigger is our response
-                    if (processMessageSize == 4 && sensors[sensorID] != null)
-                    {
-                        Console.WriteLine($"DESCRIBE {sensorID}");
-                        //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
-                        Sensor s = sensors[sensorID];
-                        sendBuffer[0] = 0x06;
-                        sendBuffer[1] = (byte)(0x90 | sensorID);
-                        sendBuffer[2] = (byte)s.type;
-                        sendBuffer[3] = (byte)s.length;
-                        SetSendChecksum(4);
-                        io.Write(sendBuffer, 6);
-                        io.Clear();
-                    }
-                }
-
-                //Sensor data request
-                if (messageType == 0xA0)//160
-                {
-                    handled = true;
-                    //If it's length 4 we know the other side has requested sensor data. Anything bigger is our response
-                    if (processMessageSize == 4 && sensors[sensorID] != null)
-                    {
-                        Console.WriteLine($"SEND {sensorID}");
-                        //Console.WriteLine(BitConverter.ToString(processMessage,0,4).Replace("-",""));
-                        Sensor s = sensors[sensorID];
-                        s.WriteValue(sensorID, sendBuffer);
-                        SetSendChecksum(2 + s.length);
-                        io.Write(sendBuffer, 4 + s.length);
-                        io.Clear();
-
-                    }
-                }
-
-                //I really don't know what these are
-                if (messageType == 0xF0)
-                {
-                    handled = true;
-                    //Console.WriteLine($"TODO: {messageType.ToString("X2")}");
-                }
-
-
-                if (!handled)
-                {
-                    Console.WriteLine($"Uknown message type {messageType.ToString("X2")}");
-                    syncronised = false;
-                }
-
+                handler.HandleMessage(processMessage);
                 processMessagePos = 0;
-                processMessageSize = 0;
             }
         }
 
@@ -189,16 +122,6 @@ namespace Ibus
             }
             ushort messageChecksum = BitConverter.ToUInt16(processMessage, positionOfChecksum);
             return compute == messageChecksum;
-        }
-
-        private void SetSendChecksum(int positionOfChecksum)
-        {
-            ushort compute = 0xFFFF;
-            for (int i = 0; i < positionOfChecksum; i++)
-            {
-                compute -= sendBuffer[i];
-            }
-            BitConverter.GetBytes(compute).CopyTo(sendBuffer, positionOfChecksum);
         }
     }
 }

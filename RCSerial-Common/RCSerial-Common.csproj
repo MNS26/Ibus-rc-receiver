@@ -27,39 +27,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\External\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\External\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="Balsa.Core">
-      <HintPath>..\External\Managed\Balsa.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="FloatingUtil">
-      <HintPath>..\External\Managed\FloatingUtil.dll</HintPath>
-    </Reference>
-    <Reference Include="System">
-      <HintPath>..\External\Managed\System.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\External\Managed\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\External\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="AutopilotCommon">
-      <HintPath>..\External\Autopilot\AutopilotCommon.dll</HintPath>
-    </Reference>
-    <Reference Include="Autopilot">
-      <HintPath>..\External\Autopilot\Autopilot.dll</HintPath>
-    </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Message.cs" />
-    <Compile Include="RingBuffer.cs" />
+    <Compile Include="Handler.cs" />
     <Compile Include="Decoder.cs" />
-    <Compile Include="RCSerial.cs" />
     <Compile Include="SerialIO.cs" />
     <Compile Include="IOInterface.cs" />
     <Compile Include="FileIO.cs" />
@@ -67,6 +43,9 @@
     <Compile Include="SensorType.cs" />
     <Compile Include="SensorValueType.cs" />
     <Compile Include="TCPIO.cs" />
+    <Compile Include="UDPIO.cs" />
+
+    <Compile Include="Sender.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
