@@ -34,6 +34,11 @@
     <None Include="RCSerial-Console.csproj" />
   </ItemGroup>
   <ItemGroup>
+  <Reference Include="AutopilotCommon">
+      <HintPath>..\External\Autopilot\AutopilotCommon.dll</HintPath>
+    </Reference>
+</ItemGroup>
+  <ItemGroup>
     <Reference Include="Assembly-CSharp-firstpass"><HintPath>..\External\Managed\Assembly-CSharp-firstpass.dll</HintPath></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>..\External\Managed\UnityEngine.CoreModule.dll</HintPath></Reference>
     <Reference Include="System" />

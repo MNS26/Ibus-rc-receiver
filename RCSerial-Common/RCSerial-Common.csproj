@@ -44,7 +44,6 @@
     <Compile Include="SensorValueType.cs" />
     <Compile Include="TCPIO.cs" />
     <Compile Include="UDPIO.cs" />
-
     <Compile Include="Sender.cs" />
   </ItemGroup>
   <ItemGroup>

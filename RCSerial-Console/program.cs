@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1416
 //Serial warnings for ios and android
-
+using AutopilotCommon;
 using System;
 using System.IO.Ports;
 using System.Threading;
@@ -9,11 +9,14 @@ namespace Ibus
 {
     class Program
     {
+        private bool standalone = false;
+        static DataStore data = new DataStore();
         private static long startupTime = DateTime.UtcNow.Ticks;
         private static IOInterface io;
         private static byte[] sendBuffer = new byte[64];
         public static void Main(string[] args)
         {
+            data.serial = true;
             SetupIO(args);
 
             //Set up sensors
@@ -75,6 +78,7 @@ namespace Ibus
         private static void MessageEvent(Message m)
         {
             //Console.WriteLine($"message {m.channels[0]}");
+            data.RCchannels = m.channelsRaw;
         }
 
         private static void SetupIO(string[] args)

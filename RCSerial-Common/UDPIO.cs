@@ -39,7 +39,6 @@ namespace Ibus
             }
             catch
             {
-                Console.WriteLine("Disconnect");
                 udp = null;
             }
         }
@@ -55,7 +54,6 @@ namespace Ibus
             }
             catch
             {
-                Console.WriteLine("Disconnect");
                 udp = null;
             }
         }

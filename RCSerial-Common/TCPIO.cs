@@ -23,7 +23,7 @@ namespace Ibus
             {
                 if (tcp != null)
                 {
-                    Console.WriteLine("Disconnect");
+                    
                     tcp.Close();
                 }
             }
@@ -31,7 +31,6 @@ namespace Ibus
             {
             }
             tcp = listener.EndAcceptTcpClient(ar);
-            Console.WriteLine($"Connnected");
             listener.BeginAcceptTcpClient(TCPConnect, null);
         }
 
@@ -54,7 +53,6 @@ namespace Ibus
                     int bytesRead = tcp.GetStream().Read(buffer, length - bytesToRead, length);
                     if (bytesRead == 0)
                     {
-                        Console.WriteLine("Disconnect");
                         return;
                     }
                     bytesToRead -= bytesToRead;
@@ -62,7 +60,6 @@ namespace Ibus
             }
             catch
             {
-                Console.WriteLine("Disconnect");
                 tcp = null;
             }
         }
@@ -75,7 +72,6 @@ namespace Ibus
             }
             catch
             {
-                Console.WriteLine("Disconnect");
                 tcp = null;
             }
         }

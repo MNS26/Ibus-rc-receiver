@@ -1,0 +1,21 @@
+ModCFG
+{
+    title = Serial input Autopilot
+    author = MS26
+    modVersion = 0.1.0
+	requiresGameVersion = 0.101.0
+    Plugin
+    {
+        name = RCSerial
+        description = main mod file
+        asmpath = Addons\RCSerial\RCSerial.dll
+        order = 1000
+    }
+    Plugin
+    {
+        name = RCSerial-Common
+        description = manages serial connection and processing
+        asmpath = Addons\RCSerial\RCSerial-Common.dll
+        order = 999
+    }
+}
