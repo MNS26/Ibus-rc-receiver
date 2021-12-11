@@ -3,3 +3,8 @@ External/Managed/*.dll
 obj
 bin
 *.user
+External/*
+!External/Add external references here.txt
+External/Autopilot/Autopilot-Common.dll
+External/Autopilot/Autopilot-Common.dll
+External/Autopilot/Autopilot.dll

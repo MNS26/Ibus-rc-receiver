@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RCSerial", "RCSerial\RCSerial.csproj", "{87022519-A3A2-48E4-9531-3419B30CEC01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RCSerial-Common", "RCSerial-Common\RCSerial-Common.csproj", "{2AA9C9C4-4142-4163-B58F-BC76D0F7BE9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RCSerial-Console", "RCSerial-Console\RCSerial-Console.csproj", "{71820A29-DD07-401D-BFC5-BC1913BADCBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87022519-A3A2-48E4-9531-3419B30CEC01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87022519-A3A2-48E4-9531-3419B30CEC01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87022519-A3A2-48E4-9531-3419B30CEC01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87022519-A3A2-48E4-9531-3419B30CEC01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AA9C9C4-4142-4163-B58F-BC76D0F7BE9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AA9C9C4-4142-4163-B58F-BC76D0F7BE9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AA9C9C4-4142-4163-B58F-BC76D0F7BE9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AA9C9C4-4142-4163-B58F-BC76D0F7BE9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71820A29-DD07-401D-BFC5-BC1913BADCBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71820A29-DD07-401D-BFC5-BC1913BADCBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71820A29-DD07-401D-BFC5-BC1913BADCBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71820A29-DD07-401D-BFC5-BC1913BADCBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
