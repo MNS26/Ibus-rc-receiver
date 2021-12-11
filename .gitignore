@@ -1,12 +1,5 @@
-*.xml
-
-External/*
-!External/*.txt
-RCSerial-Common/bin/
-RCSerial-Common/obj
-RCSerial-Console/bin/
-RCSerial-Console/obj/
-packages/
-RCSerial/obj/*
-RCSerial/bin/Debug/*.dll
-!RCSerial/bin/Debug/RCSerial.dll
+External/Managed/*.dll
+.vs
+obj
+bin
+*.user

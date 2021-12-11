@@ -1,6 +1,5 @@
 using BalsaCore;
 using UnityEngine;
-using RCSerialCommon;
 
 namespace RCSerial
 {

@@ -1,92 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{7923CC1F-E970-41C2-8301-10DE70E6BFCC}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>RCSerial</RootNamespace>
-    <AssemblyName>RCSerial</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-    <ItemGroup>
-    <Compile Include="RCSerial.cs" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\External\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\External\Managed\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Balsa.Core">
-      <HintPath>..\External\Managed\Balsa.Core.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/Balsa.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="com.unity.multiplayer-hlapi.Runtime">
+      <HintPath>../External/Managed/com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="FloatingUtil">
-      <HintPath>..\External\Managed\FloatingUtil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System">
-      <HintPath>..\External\Managed\System.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/FloatingUtil.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\External\Managed\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\External\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Managed/UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-    <Reference Include="AutopilotCommon">
-      <HintPath>..\External\Autopilot\AutopilotCommon.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Autopilot-Common">
+      <HintPath>../External/Autopilot/Autopilot-Common.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Autopilot">
-      <HintPath>..\External\Autopilot\Autopilot.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>../External/Autopilot/Autopilot.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
-    <ItemGroup>
-    <None Include="RCSerial.csproj" />
+  <ItemGroup>
+    <None Update="modexport.cfg" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="RCSerial.modcfg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="RCSerialCommon"><HintPath>..\RCSerial-Common\bin\Debug\RCSerial-Common.dll</HintPath></Reference>
+    <ProjectReference Include="..\RCSerial-Common\RCSerial-Common.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="RCSerial.modcfg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="modexport.cfg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\RCSerial-Common\RCSerial-Common.csproj">
-      <Project>{3E3224AE-5C7F-4538-80B7-97D98F3BC31C}</Project>
-      <Name>RCSerial-Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
