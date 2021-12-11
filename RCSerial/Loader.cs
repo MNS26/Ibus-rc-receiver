@@ -9,17 +9,16 @@ namespace RCSerial
         private static bool loaded = false;
         private static GameObject go;
         private static MonoBehaviour mod;
-        [BalsaAddonInit]
-        public static void BalsaInit()
-        {
 
+        [BalsaAddonInit(invokeTime = AddonInvokeTime.MainMenu)]
+        public static void BalsaInitMenu()
+        {
             if (!loaded)
             {
                 loaded = true;
                 go = new GameObject();
             }
             mod = go.AddComponent<RCSerial>();
-
         }
 
         [BalsaAddonInit(invokeTime = AddonInvokeTime.Flight)]

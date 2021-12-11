@@ -1,28 +1,36 @@
-﻿using AutopilotCommon;
-using FSControl;
-using Modules;
+﻿//using AutopilotCommon;
 using UnityEngine;
 using Ibus;
 using System;
+using System.Threading;
 using System.IO.Ports;
 namespace RCSerial
 {
     public class RCSerial : MonoBehaviour
     {
-        static DataStore data = new DataStore();
-        static Sensor[] sensors = new Sensor[16];
-        static Sender sender = new Sender(io);
-        static Handler handler = new Handler(MessageEvent, sensors, sender);
-        Decoder decoder = new Decoder(handler);
+        Thread readThread;
+        static AutopilotCommon.DataStore data = new AutopilotCommon.DataStore();
+        Sensor[] sensors;
+        Sender sender;
+        Handler handler;
+        Decoder decoder;
         private static long startupTime = DateTime.UtcNow.Ticks;
-        private static IOInterface io;
+        IOInterface io;
         private static byte[] sendBuffer = new byte[64];
         byte[] buffer = new byte[64];
+        bool running = true;
         private bool standalone = false;
         public void Start()
         {
-            DontDestroyOnLoad(this);
             Log("Start");
+            sensors  = new Sensor[16];
+            sensors[0] = null;
+            sensors[1] = new Sensor(SensorType.CELL,GetVoltage);
+            io = new SerialIO(FindSerialPort());
+            sender = new Sender(io);
+            handler = new Handler(MessageEvent, sensors, sender);
+            decoder = new Decoder(handler);
+            DontDestroyOnLoad(this);
             try{
             data.serial = true;
             }
@@ -32,13 +40,18 @@ namespace RCSerial
             }
             sensors[1] = new Sensor(SensorType.CELL,GetVoltage);
             if (standalone == true){return;}
-            SetupIO();
+            readThread = new Thread(new ThreadStart(Loop));
+            readThread.Start();
+            //SetupIO(io);
         }
-        public void Update()
+        public void Update(){}
+        private void Loop()
         {
-            if(standalone == true){return;} 
-            int bytesAvailable = 0;
-             while ((bytesAvailable = io.Available()) > 0)
+            while(running)
+            {
+                if(standalone == true){return;} 
+                int bytesAvailable = 0;
+                while ((bytesAvailable = io.Available()) > 0)
                 {
                     int bytesRead = bytesAvailable;
                     if (bytesRead > buffer.Length)
@@ -48,6 +61,7 @@ namespace RCSerial
                     io.Read(buffer, bytesRead);
                     decoder.Decode(buffer, bytesRead);
                 }
+            }
         }
         public void FixedUpdate()
         {
@@ -57,13 +71,27 @@ namespace RCSerial
             //Console.WriteLine($"message {m.channels[0]}");
             data.RCchannels = m.channelsRaw;
         }
+        public void OnDestroy()
+        {
+            running = false;
+        }
+        private string FindSerialPort()
+        {
+            string[] ports = SerialPort.GetPortNames();
+            if (ports.Length > 0)
+            {
+                //Return the last serial port as this is almost certainly the last one plugged in.
+                return ports[ports.Length - 1];
+            }
+            return null;
+        }
         private static int GetVoltage()
         {
             long currentTime = DateTime.UtcNow.Ticks;
             return (int)((currentTime - startupTime) / TimeSpan.TicksPerMillisecond) % 100;
         }
 
-        private static void SetupIO()
+        private static void SetupIO(IOInterface io)
         {
            
             string[] serialPorts = SerialPort.GetPortNames();
